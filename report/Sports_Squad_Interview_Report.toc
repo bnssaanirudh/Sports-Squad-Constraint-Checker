@@ -1,0 +1,60 @@
+\contentsline {section}{\numberline {1}Executive Summary}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Final Result Summary}{3}{subsection.1.1}%
+\contentsline {section}{\numberline {2}Problem Understanding}{3}{section.2}%
+\contentsline {section}{\numberline {3}AI-Assisted Development Strategy}{4}{section.3}%
+\contentsline {section}{\numberline {4}Implementation Plan}{4}{section.4}%
+\contentsline {section}{\numberline {5}Technology and Architecture Decisions}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Technology Choice}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Repository Structure}{5}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Data Flow}{5}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Validation Logic}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Reference Validation}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Count Calculation}{5}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Ordered Violations}{5}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Testing Strategy and Evidence}{6}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Required Acceptance Cases}{6}{subsection.7.1}%
+\contentsline {section}{\numberline {8}UI and State Synchronization}{6}{section.8}%
+\contentsline {section}{\numberline {9}Human Engineering Judgment During Code Review}{6}{section.9}%
+\contentsline {section}{\numberline {10}Trade-offs and Deliberately Deferred Work}{7}{section.10}%
+\contentsline {section}{\numberline {11}Interview Demonstration Plan}{7}{section.11}%
+\contentsline {section}{\numberline {12}Likely Interview Questions and Prepared Answers}{7}{section.12}%
+\contentsline {subsection}{\numberline {12.1}Why Vanilla JavaScript instead of React?}{7}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}Why separate validator.js?}{7}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}How is violation ordering guaranteed?}{7}{subsection.12.3}%
+\contentsline {subsection}{\numberline {12.4}Why not fail fast on the first normal violation?}{8}{subsection.12.4}%
+\contentsline {subsection}{\numberline {12.5}Why is S08 selectable if unavailable?}{8}{subsection.12.5}%
+\contentsline {subsection}{\numberline {12.6}Why not optimize roster.find() with a Map?}{8}{subsection.12.6}%
+\contentsline {section}{\numberline {13}Live Modification Strategy}{8}{section.13}%
+\contentsline {section}{\numberline {14}Final Submission Checklist}{8}{section.14}%
+\contentsline {section}{\numberline {15}Complete AI Interaction and Development Evidence}{10}{section.15}%
+\contentsline {subsection}{\numberline {15.1}Evidence 01: Requirements Understanding}{10}{subsection.15.1}%
+\contentsline {subsection}{\numberline {15.2}Evidence 02: Requirement Risk Review}{10}{subsection.15.2}%
+\contentsline {subsection}{\numberline {15.3}Evidence 03: Final Four-Step Plan}{11}{subsection.15.3}%
+\contentsline {subsection}{\numberline {15.4}Evidence 04: Technology Decision}{11}{subsection.15.4}%
+\contentsline {subsection}{\numberline {15.5}Evidence 05: Minimal File Structure}{12}{subsection.15.5}%
+\contentsline {subsection}{\numberline {15.6}Evidence 06: Project Running}{12}{subsection.15.6}%
+\contentsline {subsection}{\numberline {15.7}Evidence 07: Fixed Roster}{13}{subsection.15.7}%
+\contentsline {subsection}{\numberline {15.8}Evidence 08: Validator Design}{13}{subsection.15.8}%
+\contentsline {subsection}{\numberline {15.9}Evidence 09: Invalid Reference Handling}{14}{subsection.15.9}%
+\contentsline {subsection}{\numberline {15.10}Evidence 10: Basic Squad Rules}{14}{subsection.15.10}%
+\contentsline {subsection}{\numberline {15.11}Evidence 11: Availability Rule}{15}{subsection.15.11}%
+\contentsline {subsection}{\numberline {15.12}Evidence 12: Cohort Boundary Review}{15}{subsection.15.12}%
+\contentsline {subsection}{\numberline {15.13}Evidence 13: Violation Order Review}{16}{subsection.15.13}%
+\contentsline {subsection}{\numberline {15.14}Evidence 14: Valid Baseline Test}{16}{subsection.15.14}%
+\contentsline {subsection}{\numberline {15.15}Evidence 15: Required S07 to S08 Invalid Test}{17}{subsection.15.15}%
+\contentsline {subsection}{\numberline {15.16}Evidence 16: Six-Player Test}{17}{subsection.15.16}%
+\contentsline {subsection}{\numberline {15.17}Evidence 17: All Validator Tests}{18}{subsection.15.17}%
+\contentsline {subsection}{\numberline {15.18}Evidence 18: Code Understanding}{18}{subsection.15.18}%
+\contentsline {subsection}{\numberline {15.19}Evidence 19: Roster UI}{19}{subsection.15.19}%
+\contentsline {subsection}{\numberline {15.20}Evidence 20: Valid Browser State}{19}{subsection.15.20}%
+\contentsline {subsection}{\numberline {15.21}Evidence 21: Sample and Reset Controls}{20}{subsection.15.21}%
+\contentsline {subsection}{\numberline {15.22}Evidence 22: Stale-State Review}{20}{subsection.15.22}%
+\contentsline {subsection}{\numberline {15.23}Evidence 23: Final UI Refinement Prompt}{21}{subsection.15.23}%
+\contentsline {subsection}{\numberline {15.24}Evidence 24: Final UI}{22}{subsection.15.24}%
+\contentsline {subsection}{\numberline {15.25}Evidence 25: Acceptance Audit}{23}{subsection.15.25}%
+\contentsline {subsection}{\numberline {15.26}Evidence 26: Senior Code Review}{23}{subsection.15.26}%
+\contentsline {subsection}{\numberline {15.27}Evidence 27: Targeted Code Fixes}{24}{subsection.15.27}%
+\contentsline {subsection}{\numberline {15.28}Evidence 28: Final Tests Passing}{24}{subsection.15.28}%
+\contentsline {subsection}{\numberline {15.29}Evidence 29: README Preparation}{25}{subsection.15.29}%
+\contentsline {subsection}{\numberline {15.30}Evidence 30: Final GitHub Push Prompt}{25}{subsection.15.30}%
+\contentsline {section}{\numberline {16}Closing Summary}{25}{section.16}%
