@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sports Squad Constraint Checker</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div id="app">
+      <h1>Sports Squad Constraint Checker</h1>
+      
+      <div class="layout-grid">
+        <section class="card roster-section">
+          <h2 class="roster-header">Local Roster <span id="selection-count-badge">0/7 Selected</span></h2>
+          <div class="table-container">
+            <table id="roster-table">
+              <thead>
+                <tr>
+                  <th>Select</th>
+                  <th>ID</th>
+                  <th>Student</th>
+                  <th>Position</th>
+                  <th>Cohort</th>
+                  <th>Availability</th>
+                </tr>
+              </thead>
+              <tbody id="roster-body">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card results-section">
+          <h2>Validation Summary</h2>
+          
+          <div class="summary-section">
+            <div class="stats-box">
+              <h3>Squad Counts</h3>
+              <div id="counts-display" class="stats-grid">
+                <!-- Counts rendered here -->
+              </div>
+            </div>
+            
+            <div class="rules-box">
+              <h3>Rule Checklist</h3>
+              <ul id="rules-summary" class="clean-list">
+                <!-- Rule pass/fails rendered here -->
+              </ul>
+            </div>
+          </div>
+
+          <div class="action-bar main-actions">
+            <button id="validate-btn" class="btn primary btn-large">Validate Squad</button>
+          </div>
+          
+          <div class="action-bar sample-actions">
+            <button id="load-valid-btn" class="btn secondary btn-small">Load Valid Sample</button>
+            <button id="load-invalid-btn" class="btn secondary btn-small">Load Invalid Sample</button>
+            <button id="reset-btn" class="btn outline btn-small">Reset</button>
+          </div>
+
+          <div id="validation-output" class="validation-output">
+            <div class="status-container">
+              <div id="overall-status" class="status-badge"></div>
+              <div id="violation-count" class="violation-count"></div>
+            </div>
+            <ul id="error-list" class="error-list">
+              <!-- Ordered errors rendered here -->
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
