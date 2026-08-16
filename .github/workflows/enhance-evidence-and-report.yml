@@ -1,0 +1,128 @@
+name: Enhance Evidence and Rebuild Report
+
+on:
+  push:
+    branches: [report-pdf-build]
+    paths:
+      - '.github/workflows/enhance-evidence-and-report.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  enhance-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout report branch
+        uses: actions/checkout@v4
+        with:
+          ref: report-pdf-build
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: pip install pillow
+
+      - name: Enhance all evidence screenshots
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageFilter, ImageEnhance
+
+          folder = Path('prompt images')
+          files = sorted(folder.glob('*.png'))
+          print(f'Enhancing {len(files)} screenshots')
+
+          for path in files:
+              with Image.open(path) as im:
+                  im.load()
+                  original_size = im.size
+                  # Preserve alpha if present, otherwise RGB.
+                  if im.mode not in ('RGB', 'RGBA'):
+                      im = im.convert('RGBA' if 'A' in im.getbands() else 'RGB')
+
+                  # The evidence captures are ~600 px wide. 4x gives GitHub/PDF
+                  # enough source pixels to downsample cleanly without inventing content.
+                  scale = 4
+                  target = (im.width * scale, im.height * scale)
+                  im = im.resize(target, Image.Resampling.LANCZOS)
+
+                  # Mild local enhancement tuned for screenshots/text. Keep colors faithful.
+                  im = ImageEnhance.Contrast(im).enhance(1.08)
+                  im = im.filter(ImageFilter.UnsharpMask(radius=1.8, percent=185, threshold=2))
+                  im = ImageEnhance.Sharpness(im).enhance(1.08)
+
+                  # Preserve PNG losslessness. Do not quantize or JPEG-compress evidence.
+                  im.save(path, format='PNG', optimize=False, compress_level=4, dpi=(192, 192))
+                  print(f'{path.name}: {original_size[0]}x{original_size[1]} -> {target[0]}x{target[1]}')
+          PY
+
+      - name: Update Markdown evidence presentation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('INTERVIEW_REPORT.md')
+          text = p.read_text(encoding='utf-8')
+          marker = '> **Evidence image quality:**'
+          note = ('> **Evidence image quality:** The 30 original AI-workflow screenshots have been '
+                  'losslessly upscaled 4x with controlled sharpening and contrast enhancement for '
+                  'clearer reading on GitHub and in the PDF. The screenshot content itself was not '
+                  'regenerated, rewritten, cropped, or altered.\n\n')
+          if marker not in text:
+              lines = text.splitlines(True)
+              insert_at = 1
+              while insert_at < len(lines) and lines[insert_at].strip() == '':
+                  insert_at += 1
+              lines.insert(insert_at, '\n' + note)
+              text = ''.join(lines)
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Improve PDF evidence sizing
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('Sports_Squad_Interview_Report.tex')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('height=0.73\\textheight', 'height=0.79\\textheight')
+          text = text.replace('All evidence screenshots are embedded directly in this PDF.',
+                              'All evidence screenshots are embedded directly in this PDF using the enhanced lossless PNG evidence files.')
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
+
+      - name: Compile enhanced report
+        run: |
+          pdflatex -interaction=nonstopmode -halt-on-error Sports_Squad_Interview_Report.tex
+          pdflatex -interaction=nonstopmode -halt-on-error Sports_Squad_Interview_Report.tex
+          cp Sports_Squad_Interview_Report.pdf Sports_Squad_Constraint_Checker_Interview_Report.pdf
+
+      - name: Remove temporary build workflows
+        run: |
+          rm -f .github/workflows/build-interview-report.yml
+          rm -f .github/workflows/enhance-evidence-and-report.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+
+      - name: Commit enhanced evidence and final report
+        run: |
+          git config user.name 'Badampudi Agasthya Anirudh'
+          git config user.email 'anirudhbadampudi@gmail.com'
+          git add -A
+          git commit -m 'docs: enhance evidence images and rebuild interview report' || true
+          git push origin report-pdf-build
+
+      - name: Upload final PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: enhanced-sports-squad-interview-report
+          path: Sports_Squad_Constraint_Checker_Interview_Report.pdf
+          retention-days: 7
