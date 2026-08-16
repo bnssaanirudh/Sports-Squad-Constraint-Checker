@@ -1,0 +1,373 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.82in]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{array}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{microtype}
+\usepackage{listings}
+\usepackage{parskip}
+
+\definecolor{techblue}{RGB}{0,63,114}
+\definecolor{techgray}{RGB}{80,80,80}
+\definecolor{softblue}{RGB}{240,247,252}
+\definecolor{softgreen}{RGB}{238,249,242}
+\definecolor{softred}{RGB}{253,241,242}
+
+\titleformat{\section}{\normalfont\Large\bfseries\color{techblue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{techblue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries\color{techgray}}{\thesubsubsection}{1em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{techgray}Sports Squad Constraint Checker --- AI-Assisted Interview Report}
+\fancyhead[R]{\small\color{techgray}SI26\_P07}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\hypersetup{colorlinks=true,linkcolor=techblue,urlcolor=techblue,citecolor=techblue}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\onehalfspacing
+\setlist[itemize]{leftmargin=*,nosep}
+\setlist[enumerate]{leftmargin=*}
+\captionsetup{font=small,labelfont=bf}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,backgroundcolor=\color{softblue},columns=fullflexible}
+
+\newcommand{\statuspass}{\textbf{\color{green!50!black}PASS}}
+\newcommand{\evidence}[3]{%
+  \begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth,height=0.79\textheight,keepaspectratio]{\detokenize{../prompt images/#2}}
+  \caption{#1. #3}
+  \end{figure}
+}
+
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{1.2cm}
+{\color{techblue}\rule{\textwidth}{2pt}}\\[20pt]
+{\Huge\bfseries\color{techblue} AI-Assisted Coding Interview Report}\\[10pt]
+{\LARGE\color{techblue} Sports Squad Constraint Checker}\\[4pt]
+{\Large\color{techblue} SI26\_P07}\\[20pt]
+{\color{techblue}\rule{\textwidth}{2pt}}\\[28pt]
+\begin{tabular}{ll}
+  \textbf{Candidate:} & Badampudi Agasthya Anirudh \\
+  \textbf{Project:} & Sports Squad Constraint Checker \\
+  \textbf{Repository:} & bnssaanirudh/Sports-Squad-Constraint-Checker \\
+  \textbf{Technology:} & Vanilla JavaScript, HTML, CSS, Vite, Vitest \\
+  \textbf{Interview Format:} & AI-Assisted Coding Interview \\
+  \textbf{Report Date:} & August 16, 2026 \\
+\end{tabular}
+\vfill
+\begin{minipage}{0.88\textwidth}
+\centering
+\color{techgray}
+This report documents the complete engineering workflow: problem understanding, planning, AI prompting, architecture decisions, implementation, testing, human review decisions, final acceptance evidence, and live-modification readiness. All evidence screenshots are embedded directly in this PDF using the enhanced lossless PNG evidence files.
+\end{minipage}
+\vfill
+{\small\color{techgray}Prepared for technical interview presentation and submission.}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+The Sports Squad Constraint Checker is a compact browser application that validates a manually selected seven-player futsal squad against a fixed local roster. The application reports position and cohort counts, individual rule states, an overall \texttt{VALID} or \texttt{INVALID} result, and every applicable violation in the required deterministic order.
+
+The solution deliberately does \textbf{not} optimize, rank, generate, or recommend a squad. Its responsibility is validation only. The implementation follows a simple architecture: fixed roster data in \texttt{data.js}, pure business rules in \texttt{validator.js}, browser state/rendering in \texttt{main.js}, and focused unit tests in \texttt{validator.test.js}.
+
+\subsection{Final Result Summary}
+\begin{tabularx}{\textwidth}{Xl}
+\toprule
+\textbf{Area} & \textbf{Result} \\
+\midrule
+Fixed nine-player roster and default S01--S07 selection & \statuspass \\
+Valid baseline counts and status & \statuspass \\
+Required S07 $\rightarrow$ S08 invalid case & \statuspass \\
+Six-player case & \statuspass \\
+Cohort maximum boundary at exactly 4 & \statuspass \\
+Duplicate/unknown ID handling & \statuspass \\
+UTILITY semantics & \statuspass \\
+Deterministic violation ordering & \statuspass \\
+Reset/sample synchronization & \statuspass \\
+Pure validator separated from UI & \statuspass \\
+Automated test suite & 13 tests \\
+No squad recommendation/optimization & \statuspass \\
+\bottomrule
+\end{tabularx}
+
+\section{Problem Understanding}
+The required application validates a user-selected squad from a fixed roster. A valid selection must satisfy all of the following rules:
+\begin{enumerate}
+\item Exactly 7 distinct players.
+\item Exactly 1 GOALKEEPER.
+\item At least 2 DEFENDER players.
+\item At least 2 FORWARD players.
+\item No selected player may be UNAVAILABLE.
+\item No more than 4 YEAR\_2 players.
+\item No more than 4 YEAR\_3 players.
+\item UTILITY counts toward squad size and cohort totals, but not defender or forward minimums.
+\item Unknown or repeated player IDs produce \texttt{INVALID\_SELECTION\_REFERENCE} and clear normal counts/rule results.
+\item All regular squad rules are evaluated independently and all violations are listed in the required order.
+\end{enumerate}
+
+The built-in valid squad is S01--S07. The required invalid demonstration replaces S07 with S08, producing exactly two violations: \texttt{PLAYER\_UNAVAILABLE: S08} followed by \texttt{COHORT\_LIMIT\_EXCEEDED: YEAR\_2 has 5, maximum 4}.
+
+\section{AI-Assisted Development Strategy}
+The interview evaluates not only the final code, but also how AI was used. The workflow therefore avoided one-shot generation. Each stage followed this pattern:
+\begin{enumerate}
+\item Give AI a small, bounded task.
+\item Read the response and compare it to the original contract.
+\item Challenge or refine anything unclear.
+\item Implement only that stage.
+\item Verify the result manually or with tests.
+\item Capture evidence before continuing.
+\end{enumerate}
+This produced a traceable prompt history and made human engineering judgment visible throughout the project.
+
+\section{Implementation Plan}
+A four-step plan was finalized before implementation:
+\begin{enumerate}
+\item \textbf{Requirements and data model:} lock down the roster, validation contract, edge cases, and acceptance scenarios.
+\item \textbf{Pure validation and tests:} implement the domain rules independently of the DOM and prove them with focused tests.
+\item \textbf{UI and synchronization:} connect the current selection to one validator result and render counts, rules, controls, and overall status.
+\item \textbf{Acceptance verification and documentation:} manually run required scenarios, review code, capture screenshots, and prepare for the live modification.
+\end{enumerate}
+
+\section{Technology and Architecture Decisions}
+\subsection{Technology Choice}
+The project uses Vanilla JavaScript, HTML, CSS, Vite, and Vitest. React, a backend, database, authentication, and external APIs were intentionally excluded because the application has one local screen and a fixed nine-player roster. This keeps the code easier to understand, test, and change under interview pressure.
+
+\subsection{Repository Structure}
+\begin{lstlisting}
+Sports-Squad-Constraint-Checker/
+|-- index.html
+|-- style.css
+|-- package.json
+|-- README.md
+|-- src/
+|   |-- data.js
+|   |-- validator.js
+|   `-- main.js
+|-- tests/
+|   `-- validator.test.js
+`-- prompt images/
+\end{lstlisting}
+
+\subsection{Data Flow}
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\centering
+Fixed roster + selected player ID Set $\rightarrow$ \texttt{validateSquad(selectedIds, roster)} $\rightarrow$ counts + ordered violations + validity $\rightarrow$ \texttt{updateUI()} $\rightarrow$ roster state, summary cards, rule checklist, status and errors.}}
+\end{center}
+The validator is intentionally pure and independent of the browser. This is the central architectural decision because it makes the business rules directly unit-testable and reduces risk during live modifications.
+
+\section{Validation Logic}
+\subsection{Reference Validation}
+Duplicate IDs are detected with a \texttt{Set}. Unknown IDs are checked against roster IDs. If either check fails, the validator returns only \texttt{INVALID\_SELECTION\_REFERENCE} with zeroed counts and does not evaluate normal squad rules.
+
+\subsection{Count Calculation}
+For valid references, the validator calculates squad size, GOALKEEPER/DEFENDER/FORWARD/UTILITY counts, and YEAR\_2/YEAR\_3 cohort totals. UTILITY remains its own position and does not satisfy defender or forward minimums.
+
+\subsection{Ordered Violations}
+Violations are appended in the exact contract order:
+\begin{lstlisting}
+SQUAD_SIZE_MUST_BE_7
+GOALKEEPER_COUNT_MUST_BE_1
+MINIMUM_DEFENDERS_NOT_MET
+MINIMUM_FORWARDS_NOT_MET
+PLAYER_UNAVAILABLE: <ID>               (roster order)
+COHORT_LIMIT_EXCEEDED: YEAR_2 ...
+COHORT_LIMIT_EXCEEDED: YEAR_3 ...
+\end{lstlisting}
+The cohort boundary uses \texttt{> 4}, not \texttt{>= 4}, because exactly four is permitted.
+
+\section{Testing Strategy and Evidence}
+Testing was implemented before the full interface. The repository contains 13 Vitest tests covering reference integrity, required baseline behavior, each structural rule, unavailable players, cohort limits, the two mandated acceptance scenarios, and UTILITY isolation.
+
+\subsection{Required Acceptance Cases}
+\begin{longtable}{p{0.20\textwidth}p{0.75\textwidth}}
+\toprule
+\textbf{Scenario} & \textbf{Expected Result} \\
+\midrule
+Valid baseline & S01--S07: VALID; size 7; GK 1; DEF 2; FWD 2; UTIL 2; YEAR\_2 4; YEAR\_3 3. \\
+S07 $\rightarrow$ S08 & INVALID with exactly \texttt{PLAYER\_UNAVAILABLE: S08}, then \texttt{COHORT\_LIMIT\_EXCEEDED: YEAR\_2 has 5, maximum 4}. \\
+Six-player case & Reset then deselect only S07: size 6 and exactly \texttt{SQUAD\_SIZE\_MUST\_BE\_7}. \\
+Reset & Restores S01--S07 and removes any earlier invalid state. \\
+Boundary & Exactly four players in a cohort is allowed. \\
+\bottomrule
+\end{longtable}
+
+\section{UI and State Synchronization}
+The single-screen interface includes the full roster, checkboxes, selection count, position/cohort summaries, rule checklist, Validate Squad action, valid/invalid sample controls, Reset, and ordered validation output.
+
+The selected ID \texttt{Set} is the source of truth. Every change runs the same validator and updates the derived UI. The final version initializes roster rows once, uses event delegation for checkbox changes, and updates row state without destroying the checkbox DOM nodes.
+
+\section{Human Engineering Judgment During Code Review}
+A senior-style AI review raised four topics: keyboard focus loss from rebuilding roster rows, theoretical XSS if roster data later became untrusted, repeated event listener creation, and theoretical optimization of repeated \texttt{Array.find()} calls with a \texttt{Map}.
+
+The human decision was deliberately selective:
+\begin{itemize}
+\item \textbf{Accepted:} keyboard-focus/event-listener issue, because it affected the current UI and accessibility.
+\item \textbf{Deferred:} hypothetical external-data XSS redesign, because the assignment uses a fixed trusted local roster.
+\item \textbf{Rejected for current scope:} large-roster lookup optimization, because the roster contains nine players and the simpler implementation is easier to explain.
+\end{itemize}
+The final UI therefore initializes roster DOM once and uses a single delegated \texttt{change} listener. The validator remained unchanged because the defect was in the UI layer.
+
+\section{Trade-offs and Deliberately Deferred Work}
+\begin{itemize}
+\item Vanilla JavaScript was preferred over a framework for explainability and low overhead.
+\item A backend/database was not added because no persistence or remote data was required.
+\item Direct readable checks were preferred over a generalized rules engine.
+\item \texttt{Array.find()} was retained for a fixed nine-player roster instead of prematurely optimizing for thousands of players.
+\item The optional formation visualization was deferred until all required behavior and evidence were complete.
+\item Squad optimization, ranking, automatic replacement, match management, accounts, and bookings were explicitly excluded because they are out of scope.
+\end{itemize}
+
+\section{Interview Demonstration Plan}
+A concise demo sequence is:
+\begin{enumerate}
+\item Explain that the tool validates manual selections only.
+\item Show the four-step plan and architecture separation.
+\item Load the valid sample and point out the required counts and VALID status.
+\item Replace S07 with S08 and show the exact two ordered violations while size/position checks still pass.
+\item Reset and deselect only S07 to show the single squad-size violation.
+\item Reset again to prove there is no stale invalid state.
+\item Run \texttt{npm test} and point out the acceptance and edge-case tests.
+\item Show one AI refinement example and the selective human decision made after code review.
+\end{enumerate}
+
+\section{Likely Interview Questions and Prepared Answers}
+\subsection{Why Vanilla JavaScript instead of React?}
+The app is one local screen with nine fixed players and no routing, backend, authentication, or complex component tree. Vanilla JavaScript minimizes dependencies while the validator/UI separation still provides maintainable structure.
+
+\subsection{Why separate validator.js?}
+Validation is the core business logic. A pure function can be tested without the DOM, prevents UI changes from redefining rules, and makes live rule changes easier to isolate.
+
+\subsection{How is violation ordering guaranteed?}
+The validator appends violations in contract order. Unavailable players are traversed in roster order, and cohorts are checked YEAR\_2 then YEAR\_3.
+
+\subsection{Why not fail fast on the first normal violation?}
+The contract requires every regular squad rule to be evaluated independently and every applicable violation to be shown. Invalid-reference handling is different only because the contract explicitly treats it as an input-integrity failure.
+
+\subsection{Why is S08 selectable if unavailable?}
+The application validates invalid choices rather than preventing them. The required demonstration specifically needs S08 to be selectable so \texttt{PLAYER\_UNAVAILABLE: S08} can be reported.
+
+\subsection{Why not optimize roster.find() with a Map?}
+For a fixed nine-player roster, the performance difference is immaterial and the current code is simpler to explain. A Map would be an easy future improvement if roster scale became large or dynamic.
+
+\section{Live Modification Strategy}
+For a requested interview change:
+\begin{enumerate}
+\item Restate the requested behavior.
+\item Identify the smallest affected files.
+\item State what existing behavior must remain unchanged.
+\item Add or update a focused test for rule changes.
+\item Implement the smallest reasonable diff.
+\item Run the entire test suite.
+\item Verify the browser if UI behavior changed.
+\item Explain the diff in plain English.
+\end{enumerate}
+Examples: changing cohort maximum affects the validator/tests; adding a new UTILITY rule affects validator/tests/rule summary; visually emphasizing unavailable rows should remain UI/CSS only.
+
+\section{Final Submission Checklist}
+\begin{itemize}
+\item[$\checkmark$] Working validation application with fixed roster and default squad.
+\item[$\checkmark$] Position and cohort counts.
+\item[$\checkmark$] Rule summary and exact ordered validation messages.
+\item[$\checkmark$] Valid sample, required invalid sample, and reset actions.
+\item[$\checkmark$] Duplicate/unknown reference handling.
+\item[$\checkmark$] Required baseline, S07-to-S08, six-player, and exactly-four cohort tests.
+\item[$\checkmark$] UTILITY edge-case tests.
+\item[$\checkmark$] Prompt-history and iteration evidence.
+\item[$\checkmark$] Design/technology rationale and trade-offs.
+\item[$\checkmark$] Human decision-making evidence from code review.
+\item[$\checkmark$] Final test evidence and README instructions.
+\item[$\checkmark$] Development environment ready for focused live modification.
+\end{itemize}
+
+\clearpage
+\section{Complete AI Interaction and Development Evidence}
+The following 30 screenshots are embedded in chronological order. They document the complete development journey rather than only the final result.
+\subsection{Evidence 01: Requirements Understanding}
+\evidence{Evidence 01 - Requirements Understanding}{01-requirements-understanding.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 02: Requirement Risk Review}
+\evidence{Evidence 02 - Requirement Risk Review}{02-requirement-review.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 03: Final Four-Step Plan}
+\evidence{Evidence 03 - Final Four-Step Plan}{03-final-plan.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 04: Technology Decision}
+\evidence{Evidence 04 - Technology Decision}{04-tech-decision.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 05: Minimal File Structure}
+\evidence{Evidence 05 - Minimal File Structure}{05-file-structure.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 06: Project Running}
+\evidence{Evidence 06 - Project Running}{06-project-running.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 07: Fixed Roster}
+\evidence{Evidence 07 - Fixed Roster}{07-roster.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 08: Validator Design}
+\evidence{Evidence 08 - Validator Design}{08-validator-design.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 09: Invalid Reference Handling}
+\evidence{Evidence 09 - Invalid Reference Handling}{09-invalid-reference-handling.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 10: Basic Squad Rules}
+\evidence{Evidence 10 - Basic Squad Rules}{10-basic-rules.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 11: Availability Rule}
+\evidence{Evidence 11 - Availability Rule}{11-availability-rule.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 12: Cohort Boundary Review}
+\evidence{Evidence 12 - Cohort Boundary Review}{12-cohort-boundary.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 13: Violation Order Review}
+\evidence{Evidence 13 - Violation Order Review}{13-violation-order-review.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 14: Valid Baseline Test}
+\evidence{Evidence 14 - Valid Baseline Test}{14-valid-test.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 15: Required S07 to S08 Invalid Test}
+\evidence{Evidence 15 - Required S07 to S08 Invalid Test}{15-required-invalid-test.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 16: Six-Player Test}
+\evidence{Evidence 16 - Six-Player Test}{16-six-player-test.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 17: All Validator Tests}
+\evidence{Evidence 17 - All Validator Tests}{17-all-validator-tests.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 18: Code Understanding}
+\evidence{Evidence 18 - Code Understanding}{18-code-understanding.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 19: Roster UI}
+\evidence{Evidence 19 - Roster UI}{19-roster-ui.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 20: Valid Browser State}
+\evidence{Evidence 20 - Valid Browser State}{20-valid-browser-state.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 21: Sample and Reset Controls}
+\evidence{Evidence 21 - Sample and Reset Controls}{21-sample-reset-controls.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 22: Stale-State Review}
+\evidence{Evidence 22 - Stale-State Review}{22-stale-state-review.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 23: Final UI Refinement Prompt}
+\evidence{Evidence 23 - Final UI Refinement Prompt}{23-final-ui-prompt.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 24: Final UI}
+\evidence{Evidence 24 - Final UI}{24 -final-ui-image.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 25: Acceptance Audit}
+\evidence{Evidence 25 - Acceptance Audit}{25-acceptance-audit.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 26: Senior Code Review}
+\evidence{Evidence 26 - Senior Code Review}{26-code-review.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 27: Targeted Code Fixes}
+\evidence{Evidence 27 - Targeted Code Fixes}{27 -code-fixes-after-review.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 28: Final Tests Passing}
+\evidence{Evidence 28 - Final Tests Passing}{28 -final-tests-passing.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 29: README Preparation}
+\evidence{Evidence 29 - README Preparation}{29-readme.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+\subsection{Evidence 30: Final GitHub Push Prompt}
+\evidence{Evidence 30 - Final GitHub Push Prompt}{30 -final-prompt to push updates to github.png}{Captured during the AI-assisted development workflow and retained as interview evidence.}
+
+\section{Closing Summary}
+The final submission demonstrates more than a working checker. It documents an end-to-end AI-assisted engineering process: understand the specification, identify risky requirements, plan before coding, choose a deliberately simple architecture, isolate and test the core business rules, build a synchronized UI, verify acceptance scenarios, critically review AI recommendations, make a targeted accessibility correction, and preserve evidence of every major decision.
+
+This directly supports the interview goals of thoughtful AI collaboration, code ownership, practical engineering choices, testing mindset, transparent process, and live-modification readiness.
+
+\end{document}

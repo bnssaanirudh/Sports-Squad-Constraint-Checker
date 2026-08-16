@@ -1,5 +1,8 @@
 # Sports Squad Constraint Checker - AI-Assisted Coding Interview Report
 
+
+> **Evidence image quality:** The 30 original AI-workflow screenshots have been upscaled 4x from the original pixels with controlled sharpening and contrast enhancement for clearer reading on GitHub and in the PDF. Screenshot content was not regenerated, rewritten, cropped, or altered.
+
 **Candidate:** Badampudi Agasthya Anirudh  
 **Project:** SI26_P07 - Sports Squad Constraint Checker  
 **Repository:** `bnssaanirudh/Sports-Squad-Constraint-Checker`  
